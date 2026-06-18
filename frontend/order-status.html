@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Status</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body{
+    font-family: Arial, sans-serif;
+
+    background-image:url("images/background.png");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+
+    margin:0;
+    padding:0;
+}
+    .header-banner{
+    text-align:center;
+}
+
+.header-banner img{
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    display:block;
+}
+    .container {
+
+  max-width:600px;
+
+  margin:40px auto;
+
+  background:rgba(255,255,255,0.45);
+
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+
+  border-radius:20px;
+
+  padding:30px;
+
+  box-shadow:0 8px 30px rgba(0,0,0,0.15);
+
+  text-align:center;
+}
+    h2{
+    color:#2f3a2f;
+    font-size:32px;
+    margin-bottom:20px;
+}
+
+    .status{
+    font-size:18px;
+    font-weight:bold;
+    margin:20px 0;
+    color:#115b12;
+}
+
+    .price-box {
+      display: none;
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .price-box p {
+      font-size: 15px;
+      margin: 6px 0;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background:#115b12;;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover{
+    background:#0c450d;
+}
+
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+<div class="header-banner">
+    <img src="images/header.png" alt="The Resin Corner">
+</div>
+<div class="container">
+  <h2>Order Status</h2>
+  <p><strong>Order ID:</strong> <span id="orderId"></span></p>
+
+  <p class="status" id="statusText">
+    Waiting for seller to confirm price...
+  </p>
+
+  <div class="price-box" id="priceBox">
+    <p><strong>Total Price:</strong> ₹<span id="totalPrice"></span></p>
+    <p><strong>Advance Required:</strong> ₹<span id="advanceAmount"></span></p>
+    <p>
+  <strong>Remaining Amount:</strong>
+  ₹<span id="remainingAmount"></span>
+</p>
+
+    <button id="payBtn" onclick="goToPayment()">Pay Advance</button>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get("order_id");
+
+  document.getElementById("orderId").innerText = orderId;
+
+  const statusText = document.getElementById("statusText");
+  const priceBox = document.getElementById("priceBox");
+  const totalPriceEl = document.getElementById("totalPrice");
+  const advanceAmountEl = document.getElementById("advanceAmount");
+  const remainingAmountEl = document.getElementById("remainingAmount");
+  const payBtn = document.getElementById("payBtn");
+  
+  
+ async function fetchStatus() {
+  const response = await fetch(
+    `http://localhost:3000/api/orders/${orderId}`
+  );
+ if (!orderId) {
+  statusText.innerText = "Invalid order ID";
+  return;
+}
+
+  const data = await response.json();
+  console.log(data);
+
+if(data.is_custom == 1){
+
+    if(data.order_status === "pending"){
+
+        statusText.innerText =
+            "Waiting for seller to confirm price ⏳";
+
+        return;
+    }
+
+    if(data.order_status === "price_confirmed"){
+
+        statusText.innerText =
+            "Price confirmed 💰";
+
+        totalPriceEl.innerText =
+            data.total_price;
+
+        advanceAmountEl.innerText =
+            data.advance_amount;
+
+        remainingAmountEl.innerText =
+    data.remaining_amount;
+
+        priceBox.style.display = "block";
+
+        payBtn.innerText = "Pay Advance";
+
+        return;
+    }
+
+    if(data.order_status === "advance_paid"){
+
+    statusText.innerText =
+        "Advance Paid ✅";
+
+    totalPriceEl.innerText =
+        data.total_price;
+
+    advanceAmountEl.innerText =
+        data.advance_amount;
+
+    remainingAmountEl.innerText =
+        data.remaining_amount;
+
+    priceBox.style.display = "block";
+
+    payBtn.innerText =
+        "Pay Remaining Amount";
+
+    payBtn.onclick = () => {
+
+        window.location.href =
+            `payment.html?order_id=${orderId}&amount=${data.remaining_amount}&type=remaining`;
+
+    };
+
+    return;
+}
+
+    if(data.order_status === "total_paid"){
+
+        statusText.innerText =
+            "Payment Complete ✅";
+
+        return;
+    }
+
+    if(data.order_status === "delivered"){
+
+        statusText.innerText =
+            "Delivered 🎉";
+
+        return;
+    }
+}
+
+if(data.is_custom == 0){
+
+    if(data.order_status === "pending"){
+
+        statusText.innerText =
+            "Awaiting payment ⏳";
+
+        totalPriceEl.innerText =
+            data.total_price;
+
+        advanceAmountEl.innerText =
+            data.total_price;
+
+        priceBox.style.display = "block";
+
+        payBtn.innerText = "Pay Now";
+
+        return;
+    }
+
+    if(data.order_status === "paid"){
+
+        statusText.innerText =
+            "Payment Received ✅";
+
+        return;
+    }
+
+    if(data.order_status === "delivered"){
+
+        statusText.innerText =
+            "Delivered 🎉";
+
+        return;
+    }
+}
+  totalPriceEl.innerText = data.total_price;
+  advanceAmountEl.innerText = data.advance_amount;
+
+  priceBox.style.display = "block";
+
+  payBtn.onclick = () => {
+    window.location.href =
+      `payment.html?order_id=${orderId}&amount=${data.advance_amount}`;
+  };
+}
+function goToPayment(){
+
+    window.location.href =
+        "payment.html";
+}
+
+  // Check every 5 seconds
+  fetchStatus();
+  setInterval(fetchStatus, 5000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seller Dashboard</title>
+  <style>
+    body{
+    font-family: Arial, sans-serif;
+
+    background-image:url("images/background.png");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+
+    margin:0;
+    padding:0;
+}
+.header-banner{
+    text-align:center;
+}
+
+.header-banner img{
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    display:block;
+}
+.container{
+
+    width:95%;
+    max-width:1300px;
+
+    margin:30px auto;
+
+    background:rgba(255,255,255,0.45);
+
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+
+    border-radius:20px;
+
+    padding:25px;
+
+    box-shadow:0 8px 30px rgba(0,0,0,0.15);
+}
+h2{
+    text-align:center;
+
+    color:#2f3a2f;
+
+    font-size:32px;
+
+    margin-bottom:20px;
+}
+
+    table{
+    width:100%;
+    border-collapse:collapse;
+
+    background:rgba(255,255,255,0.85);
+
+    border-radius:15px;
+
+    overflow:hidden;
+}
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    th {
+      background:#115b12;
+      color: white;
+    }
+    button{
+
+    background:#115b12;
+
+    color:white;
+
+    border:none;
+
+    padding:10px 16px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0c450d;
+}
+    .badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.pending {
+  background: #ffe0b2;
+  color: #e65100;
+}
+
+.confirmed {
+  background: #c8e6c9;
+  color: #1b5e20;
+}
+button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+.top-nav{
+    display:flex;
+    justify-content:flex-end;
+
+    padding:15px 30px;
+}
+.stats{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:25px;
+
+    margin-bottom:30px;
+
+    flex-wrap:wrap;
+}
+
+.stat-card{
+
+    width:200px;
+
+    background:rgba(255,255,255,0.7);
+
+    border-radius:15px;
+
+    padding:20px;
+
+    text-align:center;
+
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stat-card h3{
+
+    font-size:36px;
+
+    margin:0;
+
+    color:#115b12;
+}
+
+.stat-card p{
+
+    margin-top:10px;
+
+    font-weight:bold;
+
+    color:#444;
+}
+.action-buttons button{
+    margin-right:8px;
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="header-banner">
+    <img src="images/header.png" alt="The Resin Corner">
+</div>
+
+<div class="container">
+
+<h2>Seller Dashboard</h2>
+<div class="top-nav">
+
+    <button onclick="logoutSeller()">
+        Logout
+    </button>
+
+</div>
+<div class="stats">
+
+    <div class="stat-card">
+        <h3 id="totalOrders">0</h3>
+        <p>Total Orders</p>
+    </div>
+
+    <div class="stat-card">
+        <h3 id="customOrders">0</h3>
+        <p>Custom Orders</p>
+    </div>
+
+    <div class="stat-card">
+        <h3 id="readyOrders">0</h3>
+        <p>Ready-Made Orders</p>
+    </div>
+
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>Order ID</th>
+      <th>Customer</th>
+      <th>Product</th>
+      <th>Total Price</th>
+      <th>Advance</th>
+      <th>Status</th>
+      <th>Action</th>
+
+    </tr>
+  </thead>
+
+  <tbody id="ordersTable"></tbody>
+</table>
+</div>
+<script>
+
+  if(localStorage.getItem("sellerLoggedIn") !== "true"){
+    window.location.href = "login.html";
+}
+
+async function loadOrders() {
+  const response = await fetch("http://localhost:3000/api/orders");
+  const orders = await response.json();
+  
+  const totalOrders = orders.length;
+
+const customOrders =
+    orders.filter(order => order.is_custom == 1).length;
+
+const readyOrders =
+    orders.filter(order => order.is_custom == 0).length;
+
+document.getElementById("totalOrders").innerText =
+    totalOrders;
+
+document.getElementById("customOrders").innerText =
+    customOrders;
+
+document.getElementById("readyOrders").innerText =
+    readyOrders;
+
+  const table = document.getElementById("ordersTable");
+  table.innerHTML = "";
+
+  orders.forEach(order => {
+    const row = `
+      <tr>
+        <td>${order.order_id}</td>
+        <td>${order.customer_name}</td>
+        <td>${order.product_type}</td>
+        <td>₹${order.total_price || "-"}</td>
+        <td>₹${order.advance_amount || "-"}</td>
+
+       
+        <td>
+
+  <span class="badge ${
+  order.order_status === "pending" ? "yellow" :
+  order.order_status === "accepted" ? "blue" :
+  order.order_status === "price_confirmed" ? "green" :
+  "red"
+}">
+  ${order.order_status}
+</span>
+
+</td>
+
+<td class="action-buttons">
+
+<button onclick="viewOrder(${order.order_id})">
+    View
+</button>
+
+${
+  order.is_custom &&
+  order.order_status === "pending"
+
+  ?
+
+  `<button onclick="updatePrice(${order.order_id})">
+      Update Price
+   </button>`
+
+  :
+
+  ""
+}
+
+</td>
+
+      </tr>
+    `;
+
+    table.innerHTML += row;
+  });
+}
+function updatePrice(orderId) {
+  window.location.href =
+    `seller-update-price.html?order_id=${orderId}`;
+}
+function viewOrder(orderId) {
+  window.location.href =
+    `seller-view-order.html?order_id=${orderId}`;
+}
+function logoutSeller(){
+
+    localStorage.removeItem(
+        "sellerLoggedIn"
+    );
+
+    window.location.href =
+        "login.html";
+}
+
+loadOrders();
+setInterval(loadOrders, 5000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment</title>
+    <style>
+body{
+    font-family: Arial, sans-serif;
+
+    background-image:url("images/background.png");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+
+    margin:0;
+    padding:0;
+}
+.header-banner{
+    text-align:center;
+}
+
+.header-banner img{
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    display:block;
+}
+
+.container{
+
+    width:500px;
+
+    margin:40px auto;
+
+    background:rgba(255,255,255,0.45);
+
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+
+    padding:30px;
+
+    border-radius:20px;
+
+    box-shadow:0 8px 30px rgba(0,0,0,0.15);
+
+    text-align:center;
+}
+img{
+    border:2px solid white;
+
+    border-radius:15px;
+
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+.phone{
+    font-size:20px;
+    font-weight:bold;
+    color:#115b12;
+
+}
+
+button{
+    background:#115b12;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0c450d;
+}
+</style>
+</head>
+<body>
+    <div class="header-banner">
+    <img src="images/header.png" alt="The Resin Corner">
+</div>
+<div class="container">
+
+<h2 id="paymentTitle">Payment Instructions</h2>
+
+<img
+    src="images/QR-code.jpg"
+    alt="QR Code"
+    width="250">
+
+<br><br>
+
+<h3>Seller Phone Number</h3>
+
+<p class="phone">
+    9876543210
+</p>
+
+<h3>Instructions</h3>
+
+<p>
+1. Scan the QR code and make payment.
+</p>
+
+<p>
+2. Send payment screenshot to the seller on WhatsApp.
+</p>
+
+<p>
+3. After sending the screenshot, click the button below.
+</p>
+<p>
+4.Once the seller confirms the payment, the payment status will be updated.
+</p>
+<p>
+    5. If you have any query, contact the seller through the given phone number.
+</p>
+
+<br>
+
+<button onclick="paymentSubmitted()">
+    Payment Submitted
+</button>
+</div>
+<script>
+const params =
+    new URLSearchParams(window.location.search);
+
+const paymentType =
+    params.get("type");
+
+    if(paymentType === "remaining"){
+
+    document.getElementById("paymentTitle").innerText =
+        "Remaining Payment Instructions";
+
+}
+else{
+
+    document.getElementById("paymentTitle").innerText =
+        "Advance Payment Instructions";
+
+}
+function paymentSubmitted(){
+
+    alert(
+        "Payment request submitted. Seller will verify and update the order status."
+    );
+
+    window.location.href =
+        "index.html";
+}
+
+</script>
+
+</body>
+</html>

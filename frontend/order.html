@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Place Order</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body{
+    font-family: Arial, sans-serif;
+
+    background-image:url("images/background.png");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+
+    margin:0;
+    padding:0;
+}
+.header-banner{
+    text-align:center;
+}
+
+.header-banner img{
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    display:block;
+}
+    .container {
+
+  max-width:600px;
+
+  margin:40px auto;
+
+  background:rgba(255,255,255,0.45);
+
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+
+  border-radius:20px;
+
+  padding:30px;
+
+  box-shadow:0 8px 30px rgba(0,0,0,0.15);
+}
+    h2{
+    text-align:center;
+
+    color:#2f3a2f;
+
+    font-size:32px;
+
+    margin-bottom:25px;
+}
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+    input,
+textarea{
+
+    width:100%;
+
+    padding:12px;
+
+    margin-top:6px;
+
+    border:1px solid #ddd;
+
+    border-radius:8px;
+
+    box-sizing:border-box;
+}
+    textarea { resize: vertical; }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background:#115b12;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover{
+    background:#0c450d;
+}
+    .note{
+    margin-top:12px;
+
+    font-size:14px;
+
+    color:#444;
+
+    text-align:center;
+}
+  </style>
+</head>
+
+<body>
+  <div class="header-banner">
+    <img src="images/header.png" alt="The Resin Corner">
+</div>
+
+<div class="container">
+  <h2>Place Your Order</h2>
+
+  <form id="orderForm">
+
+    <label>Customer Name</label>
+    <input type="text" id="customer_name" required>
+
+    <label>Phone Number</label>
+    <input
+    type="tel"
+    id="phone"
+    maxlength="10"
+    pattern="[0-9]{10}"
+    oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+    required
+>
+
+    <label>Address</label>
+    <textarea id="address" required></textarea>
+
+    <label>Product</label>
+    <input type="text" id="product" required>
+
+    <div id="priceSection">
+  <label>Price (₹)</label>
+  
+  <input type="number" id="price" readonly>
+</div>
+
+<p id="priceNote" class="note" >
+  Price will be confirmed by the seller after reviewing your customization.
+</p>
+
+
+    <label id="customLabel">Custom Details</label>
+    <textarea id="custom_details"></textarea>
+
+    <button type="submit">Submit Order</button>
+
+    <p class="note">
+      Once the order is placed, it cannot be cancelled.
+      For any issues, please contact support.
+    </p>
+
+  </form>
+</div>
+
+<script>
+  if(!localStorage.getItem("userId")){
+    window.location.href = "login.html";
+}
+  
+  const params = new URLSearchParams(window.location.search);
+  const type = params.get("type");
+  const priceNote =
+    document.getElementById("priceNote"); // ready | custom
+  
+
+  const productInput = document.getElementById("product");
+  const priceInput = document.getElementById("price");
+  const priceLabel = document.querySelector("label[for='price']");
+
+  // ---------- READY MADE ----------
+  if (type === "ready") {
+    productInput.value = params.get("name") || "";
+    priceInput.value = params.get("price") || "";
+    priceInput.readOnly = true; // ✅ fixed price
+    priceNote.style.display = "none";
+  }
+
+  // ---------- CUSTOM ----------
+  if (type === "custom") {
+    productInput.value = params.get("ref") || "";
+    document.getElementById("priceSection").style.display = "none";
+    priceNote.style.display = "block";
+}
+
+  document.getElementById("orderForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+   const phone =
+    document.getElementById("phone").value;
+
+if(phone.length !== 10){
+
+    alert("Phone number must be exactly 10 digits");
+
+    return;
+}
+    const data = {
+        user_id: localStorage.getItem("userId"),
+        customer_name: document.getElementById("customer_name").value,
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("address").value,
+        product_type: document.getElementById("product").value,
+        custom_details: document.getElementById("custom_details").value,
+        total_price: type === "ready" ? Number(priceInput.value) : 0,
+        is_custom: type === "custom"
+        
+    };
+   
+    try {
+        const response = await fetch("http://localhost:3000/api/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        console.log(result);
+
+        console.log("Server response:", result); // important debug
+
+        if (result.order_id) {
+            window.location.href = `order-status.html?order_id=${result.order_id}`;
+        } else {
+            alert("Order placed but ID not received");
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Error placing order");
+    }
+});
+
+
+
+ 
+  
+</script>
+
+
+</body>
+</html>

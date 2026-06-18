@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirm Order Price</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body{
+    font-family: Arial, sans-serif;
+
+    background-image:url("images/background.png");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+
+    margin:0;
+    padding:0;
+}
+
+.header-banner{
+    text-align:center;
+}
+
+.header-banner img{
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    display:block;
+}
+   .container{
+
+    max-width:500px;
+
+    margin:40px auto;
+
+    background:rgba(255,255,255,0.45);
+
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+
+    padding:30px;
+
+    border-radius:20px;
+
+    box-shadow:0 8px 30px rgba(0,0,0,0.15);
+}
+h2{
+    text-align:center;
+
+    color:#2f3a2f;
+
+    font-size:30px;
+
+    margin-bottom:25px;
+}
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input{
+
+    width:100%;
+
+    padding:12px;
+
+    margin-top:6px;
+
+    border:1px solid #ddd;
+
+    border-radius:8px;
+
+    box-sizing:border-box;
+}
+    button {
+      background:#115b12;
+
+    width:100%;
+
+    padding:12px;
+
+    margin-top:20px;
+
+    border:none;
+
+    border-radius:8px;
+
+    color:white;
+
+    cursor:pointer;
+    }
+    button:hover{
+    background:#0c450d;
+}
+.order-box{
+
+    padding:12px;
+
+    margin-bottom:20px;
+
+    background:rgba(255,255,255,0.6);
+
+    border-radius:10px;
+
+    text-align:center;
+}
+  </style>
+</head>
+
+<body>
+  <div class="header-banner">
+    <img src="images/header.png" alt="The Resin Corner">
+</div>
+
+<div class="container">
+  <h2>Confirm Order Price</h2>
+
+  <div class="order-box">
+    <strong>Order ID:</strong>
+    <span id="orderId"></span>
+</div>
+
+  <label>Total Price (₹)</label>
+  <input type="number" id="totalPrice" required>
+
+  <label>Advance Amount (₹)</label>
+  <input type="number" id="advanceAmount" required>
+
+  <button onclick="confirmPrice()">Confirm Price</button>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get("order_id");
+
+  document.getElementById("orderId").innerText = orderId;
+
+  async function confirmPrice() {
+    const total_price = document.getElementById("totalPrice").value;
+    const advance_amount = document.getElementById("advanceAmount").value;
+    
+
+    if (!orderId) {
+  alert("Order ID missing in URL");
+  return;
+}
+
+if (!total_price || !advance_amount) {
+  alert("Please enter both total price and advance amount");
+  return;
+}
+
+if (Number(advance_amount) > Number(total_price)) {
+  alert("Advance cannot be more than total price");
+  return;
+}
+
+
+    const response = await fetch(
+      `http://localhost:3000/api/orders/${orderId}/confirm-price`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          total_price,
+          advance_amount
+        })
+      }
+    );
+
+    const result = await response.json();
+    alert(result.message);
+    window.location.href =
+    `seller-view-order.html?order_id=${orderId}`;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+
+    <style>
+        body{
+    font-family: Arial, sans-serif;
+
+    background-image: url("images/background.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+
+    margin:0;
+    padding:0;
+}
+.header-banner{
+    text-align:center;
+}
+
+.header-banner img{
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    display:block;
+}
+       .container{
+    width:350px;
+
+    margin:60px auto;
+
+    background:rgba(255,255,255,0.45);
+
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+
+    border:1px solid rgba(255,255,255,0.35);
+
+    padding:30px;
+
+    border-radius:20px;
+
+    box-shadow:0 8px 30px rgba(0,0,0,0.15);
+}
+
+        h2{
+    text-align:center;
+    color:#4a4a4a;
+    margin-bottom:25px;
+}
+
+        input{
+    width:100%;
+    padding:12px;
+
+    margin-top:10px;
+    margin-bottom:15px;
+
+    border:1px solid #ddd;
+    border-radius:8px;
+
+    box-sizing:border-box;
+}
+
+        button{
+    width:100%;
+    padding:12px;
+
+    background:#115b12;
+    color:white;
+
+    border:none;
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+    transition:0.3s;
+}
+
+button:hover{
+    background:#226212;
+}
+
+        a{
+            display:block;
+            text-align:center;
+            margin-top:15px;
+        }
+        select{
+
+    width:100%;
+
+    padding:12px;
+
+    margin-bottom:15px;
+
+    border-radius:8px;
+
+    border:1px solid #ddd;
+
+    font-size:15px;
+}
+    </style>
+</head>
+<body>
+<div class="header-banner">
+    <img src="images/header.png" alt="The Resin Corner">
+</div>
+<div class="container">
+
+    <h2>Login</h2>
+    <label>Login As</label>
+
+<select id="role">
+
+    <option value="customer">
+        Customer
+    </option>
+
+    <option value="seller">
+        Seller
+    </option>
+
+</select>
+
+    <input type="email" id="email" placeholder="Email">
+
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+
+    <a href="register.html">
+        Create New Account
+    </a>
+
+</div>
+
+<script>
+
+async function login(){
+
+    const role =
+        document.getElementById("role").value;
+
+    const email =
+        document.getElementById("email").value;
+
+    const password =
+        document.getElementById("password").value;
+
+    // SELLER LOGIN
+
+    if(role === "seller"){
+
+        if(
+            email === "saini.oshin7295@gmail.com" &&
+            password === "Saini%09"
+        ){
+
+            localStorage.setItem(
+                "sellerLoggedIn",
+                "true"
+            );
+
+            alert("Seller Login Successful");
+
+            window.location.href =
+                "seller-dashboard.html";
+        }
+        else{
+
+            alert(
+                "Invalid seller credentials"
+            );
+        }
+
+        return;
+    }
+
+    // CUSTOMER LOGIN
+
+    const response = await fetch(
+        "http://localhost:3000/api/users/login",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                email,
+                password
+            })
+        }
+    );
+
+    const result =
+        await response.json();
+
+    if(result.user_id){
+
+        localStorage.setItem(
+            "userId",
+            result.user_id
+        );
+
+        localStorage.setItem(
+            "userName",
+            result.name
+        );
+
+        alert("Login Successful");
+
+        window.location.href =
+            "index.html";
+    }
+    else{
+
+        alert(result.message);
+    }
+}
+
+</script>
+
+</body>
+</html>
