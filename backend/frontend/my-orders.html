@@ -145,7 +145,7 @@ const userId = localStorage.getItem("userId");
 async function loadOrders(){
 
     const response = await fetch(
-        `http://localhost:3000/api/orders/user/${userId}`
+        `/api/orders/user/${userId}`
     );
 
     const orders = await response.json();

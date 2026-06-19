@@ -158,7 +158,7 @@ if (Number(advance_amount) > Number(total_price)) {
 
 
     const response = await fetch(
-      `http://localhost:3000/api/orders/${orderId}/confirm-price`,
+      `/api/orders/${orderId}/confirm-price`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

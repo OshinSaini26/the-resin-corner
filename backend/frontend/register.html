@@ -111,7 +111,7 @@ async function register(){
         document.getElementById("password").value;
 
     const response = await fetch(
-        "http://localhost:3000/api/users/register",
+        "/api/users/register",
         {
             method:"POST",
             headers:{
