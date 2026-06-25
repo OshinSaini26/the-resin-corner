@@ -102,7 +102,7 @@
 
   <p class="status" id="statusText">
     Waiting for seller to confirm price...
-    (this might take a while, the price will be confirmed soon)
+
   </p>
 
   <div class="price-box" id="priceBox">
@@ -148,7 +148,7 @@ if(data.is_custom == 1){
     if(data.order_status === "pending"){
 
         statusText.innerText =
-            "Waiting for seller to confirm price ⏳";
+            "Waiting for seller to confirm price ⏳, this might take a while\n\n Check your order status after a while\n Your order is placed successfully";
 
         return;
     }
